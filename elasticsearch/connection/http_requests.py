@@ -59,13 +59,18 @@ class RequestsHttpConnection(Connection):
                 'Connecting to %s using SSL with verify_certs=False is insecure.' % self.base_url)
 
     def perform_request(self, method, url, params=None, body=None, timeout=None, ignore=()):
+
+        from elasticsearch.addon.bdoc import getHeaders
+
+        headers = getHeaders(method=method,uri=url)
+
         url = self.base_url + url
         if params:
             url = '%s?%s' % (url, urlencode(params or {}))
 
         start = time.time()
         try:
-            response = self.session.request(method, url, data=body, timeout=timeout or self.timeout)
+            response = self.session.request(method, url, headers= headers, data=body, timeout=timeout or self.timeout)
             duration = time.time() - start
             raw_data = response.text
         except requests.exceptions.SSLError as e:
